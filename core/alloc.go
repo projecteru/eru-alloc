@@ -30,29 +30,26 @@ func NewHost(cpuInfo map[string]int, share int) *Host {
 }
 
 func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) {
-	var fullResultNum, fragmentResultNum, fragmentPiecesTotal, canDeployNum, baseLine int
+	var fullResultNum, fragmentResultNum, canDeployNum, baseLine int
 	var fragmentBaseResult, count, num, flag, b int
 
+	count = len(self.fragment)
 	if maxShareCore == -1 {
-		maxShareCore = len(self.full) - len(self.fragment) - full // 减枝，M == N 的情况下预留至少一个 full 量的核数
+		maxShareCore = len(self.full) - count - full // 减枝，M == N 的情况下预留至少一个 full 量的核数
+	} else {
+		maxShareCore -= count
 	}
 
 	fullResultNum = len(self.full) / full
-	fragmentPiecesTotal = 0
+	fragmentBaseResult = 0
 	for _, pieces := range self.fragment {
-		fragmentPiecesTotal += pieces
+		fragmentBaseResult += pieces / fragment
 	}
-	fragmentBaseResult = fragmentPiecesTotal / fragment
 	baseLine = utils.Min(fullResultNum, fragmentBaseResult)
-	count = len(self.fragment)
 
 	num = 0
 	flag = math.MaxInt64
 	for i := 1; i < maxShareCore+1; i++ {
-		if count > i {
-			continue
-		}
-
 		fullResultNum = (len(self.full) - i) / full
 		fragmentResultNum = fragmentBaseResult
 		for j := 0; j < i; j++ {
@@ -97,7 +94,7 @@ func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]
 			maxShareCore = len(self.full)
 		}
 		for no, pieces := range self.full {
-			if len(self.fragment) == maxShareCore {
+			if len(self.fragment) >= maxShareCore {
 				break
 			}
 			self.fragment[no] = pieces

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/projecteru/eru-alloc/utils"
@@ -72,7 +71,6 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 	}
 
 	num += count
-	fmt.Println(self.full, self.fragment)
 	for no, pieces := range self.full {
 		if count == num {
 			break

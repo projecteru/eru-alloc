@@ -44,13 +44,15 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 	}
 	fragmentResultNum = fragmentPiecesTotal / fragment
 	baseLine = utils.Min(fullResultNum, fragmentResultNum)
+	count = len(self.fragment)
 
 	num = 0
 	flag = math.MaxInt64
 	for i := 1; i < maxShareCore+1; i++ {
-		if len(self.fragment) > i {
+		if count > i {
 			continue
 		}
+
 		fullResultNum = (len(self.full) - i) / full
 		fragmentResultNum = 0
 		for j := 0; j < i; j++ {
@@ -68,7 +70,6 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		flag = b
 	}
 
-	count = 0
 	for no, pieces := range self.full {
 		if count == num {
 			break

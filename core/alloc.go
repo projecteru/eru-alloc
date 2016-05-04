@@ -1,6 +1,10 @@
 package core
 
-import "math"
+import (
+	"math"
+
+	"github.com/projecteru/eru-alloc/utils"
+)
 
 type Host struct {
 	full     map[string]int
@@ -39,7 +43,7 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		fragmentPiecesTotal += pieces
 	}
 	fragmentResultNum = fragmentPiecesTotal / fragment
-	baseLine = Min(fullResultNum, fragmentResultNum)
+	baseLine = utils.Min(fullResultNum, fragmentResultNum)
 
 	num = 0
 	flag = math.MaxInt64
@@ -52,12 +56,12 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		for j := 0; j < i; j++ {
 			fragmentResultNum += self.share / fragment
 		}
-		canDeployNum = Min(fullResultNum, fragmentResultNum)
+		canDeployNum = utils.Min(fullResultNum, fragmentResultNum)
 		if canDeployNum > baseLine {
 			num = i
 			baseLine = canDeployNum
 		}
-		b = Abs(fullResultNum - fragmentResultNum) // 剪枝，2者结果相近的时候最优
+		b = utils.Abs(fullResultNum - fragmentResultNum) // 剪枝，2者结果相近的时候最优
 		if b > flag {
 			break
 		}

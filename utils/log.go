@@ -1,4 +1,4 @@
-package lock
+package utils
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ func SetDebugLogger(w io.Writer) {
 	logger = w
 }
 
-func debug(mutex *Mutex, format string, v ...interface{}) {
+func Debug(id string, format string, v ...interface{}) {
 	if logger != nil {
-		logger.Write([]byte(mutex.id))
+		logger.Write([]byte(id))
 		logger.Write([]byte(" "))
 		logger.Write([]byte(fmt.Sprintf(format, v...)))
 		logger.Write([]byte("\n"))

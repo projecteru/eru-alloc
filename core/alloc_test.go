@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/coreos/etcd/client"
+	"github.com/projecteru/eru-alloc/utils"
 )
 
 func Benchmark_Alloc(b *testing.B) {
@@ -29,7 +30,7 @@ func Benchmark_Alloc_With_ETCD(b *testing.B) {
 	api := client.NewKeysAPI(cli)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		cpuInfo := GetCpuInfo(api, "/h2/cpu")
+		cpuInfo := utils.GetCpuInfo(api, "/h2/cpu")
 		host := NewHost(cpuInfo, 10)
 		host.GetContainerCores(1.1, -1)
 	}

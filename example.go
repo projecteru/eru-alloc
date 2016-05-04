@@ -6,6 +6,7 @@ import (
 
 	"./core"
 	"./lock"
+	"./utils"
 	"github.com/coreos/etcd/client"
 )
 
@@ -13,7 +14,7 @@ func do(i int, mu *lock.Mutex, api client.KeysAPI, cpu float64, share int) {
 	fmt.Println(i, "start")
 	mu.Lock()
 	fmt.Println(i, "get")
-	cpuInfo := core.GetCpuInfo(api, "/h2/cpu")
+	cpuInfo := utils.GetCpuInfo(api, "/h2/cpu")
 	host := core.NewHost(cpuInfo, 10)
 	cores := host.GetContainerCores(cpu, share)
 	fmt.Println(cpu, share, "-----", len(cores), cores)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/client"
+	"github.com/projecteru/eru-alloc/utils"
 	"golang.org/x/net/context"
 )
 
@@ -68,16 +69,16 @@ func (m *Mutex) Lock() (err error) {
 			return nil
 		}
 
-		debug(m, "Lock node %v ERROR %v", m.key, err)
+		utils.Debug(m.id, "Lock node %v ERROR %v", m.key, err)
 		if try < defaultTry {
-			debug(m, "Try to lock node %v again", m.key, err)
+			utils.Debug(m.id, "Try to lock node %v again", m.key, err)
 		}
 	}
 	return err
 }
 
 func (m *Mutex) lock() (err error) {
-	debug(m, "Trying to create a node : key=%v", m.key)
+	utils.Debug(m.id, "Trying to create a node : key=%v", m.key)
 	setOptions := &client.SetOptions{
 		PrevExist: client.PrevNoExist,
 		TTL:       m.ttl,
@@ -85,10 +86,10 @@ func (m *Mutex) lock() (err error) {
 	for {
 		resp, err := m.kapi.Set(m.ctx, m.key, m.id, setOptions)
 		if err == nil {
-			debug(m, "Create node %v OK [%q]", m.key, resp)
+			utils.Debug(m.id, "Create node %v OK [%q]", m.key, resp)
 			return nil
 		}
-		debug(m, "Create node %v failed [%v]", m.key, err)
+		utils.Debug(m.id, "Create node %v failed [%v]", m.key, err)
 		e, ok := err.(client.Error)
 		if !ok {
 			return err
@@ -103,20 +104,20 @@ func (m *Mutex) lock() (err error) {
 		if err != nil {
 			return err
 		}
-		debug(m, "Get node %v OK", m.key)
+		utils.Debug(m.id, "Get node %v OK", m.key)
 		watcherOptions := &client.WatcherOptions{
 			AfterIndex: resp.Index,
 			Recursive:  false,
 		}
 		watcher := m.kapi.Watcher(m.key, watcherOptions)
 		for {
-			debug(m, "Watching %v ...", m.key)
+			utils.Debug(m.id, "Watching %v ...", m.key)
 			resp, err = watcher.Next(m.ctx)
 			if err != nil {
 				return err
 			}
 
-			debug(m, "Received an event : %q", resp)
+			utils.Debug(m.id, "Received an event : %q", resp)
 			if resp.Action == deleteAction || resp.Action == expireAction {
 				// break this for-loop, and try to create the node again.
 				break
@@ -138,10 +139,10 @@ func (m *Mutex) Unlock() (err error) {
 		var resp *client.Response
 		resp, err = m.kapi.Delete(m.ctx, m.key, nil)
 		if err == nil {
-			debug(m, "Delete %v OK", m.key)
+			utils.Debug(m.id, "Delete %v OK", m.key)
 			return nil
 		}
-		debug(m, "Delete %v falied: %q", m.key, resp)
+		utils.Debug(m.id, "Delete %v falied: %q", m.key, resp)
 		e, ok := err.(client.Error)
 		if ok && e.Code == client.ErrorCodeKeyNotFound {
 			return nil

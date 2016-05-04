@@ -1,5 +1,7 @@
 package core
 
+import "math"
+
 type Host struct {
 	full     map[string]int
 	fragment map[string]int
@@ -23,27 +25,24 @@ func NewHost(cpuInfo map[string]int, share int) *Host {
 	return host
 }
 
-func (self *Host) min(a int, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) {
+	var fullResultNum, fragmentResultNum, fragmentPiecesTotal, canDeployNum, baseLine int
+	var count, num, flag, b int
+
 	if maxShareCore == -1 {
 		maxShareCore = len(self.full) - len(self.fragment) - full // 减枝，M == N 的情况下预留至少一个 full 量的核数
 	}
 
-	fullResultNum := len(self.full) / full
-	fragmentPiecesTotal := 0
+	fullResultNum = len(self.full) / full
+	fragmentPiecesTotal = 0
 	for _, pieces := range self.fragment {
 		fragmentPiecesTotal += pieces
 	}
-	fragmentResultNum := fragmentPiecesTotal / fragment
-	baseLine := self.min(fullResultNum, fragmentResultNum)
+	fragmentResultNum = fragmentPiecesTotal / fragment
+	baseLine = Min(fullResultNum, fragmentResultNum)
 
-	num := 0
+	num = 0
+	flag = math.MaxInt64
 	for i := 1; i < maxShareCore+1; i++ {
 		if len(self.fragment) > i {
 			continue
@@ -53,14 +52,19 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		for j := 0; j < i; j++ {
 			fragmentResultNum += self.share / fragment
 		}
-		canDeployNum := self.min(fullResultNum, fragmentResultNum)
+		canDeployNum = Min(fullResultNum, fragmentResultNum)
 		if canDeployNum > baseLine {
 			num = i
 			baseLine = canDeployNum
 		}
+		b = Abs(fullResultNum - fragmentResultNum) // 剪枝，2者结果相近的时候最优
+		if b > flag {
+			break
+		}
+		flag = b
 	}
 
-	count := 0
+	count = 0
 	for no, pieces := range self.full {
 		if count == num {
 			break

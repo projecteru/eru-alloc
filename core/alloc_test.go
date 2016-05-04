@@ -1,6 +1,10 @@
 package core
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/coreos/etcd/client"
+)
 
 func Benchmark_Alloc(b *testing.B) {
 	b.StopTimer()
@@ -11,6 +15,21 @@ func Benchmark_Alloc(b *testing.B) {
 	}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
+		host := NewHost(cpuInfo, 10)
+		host.GetContainerCores(1.1, -1)
+	}
+}
+
+func Benchmark_Alloc_With_ETCD(b *testing.B) {
+	b.StopTimer()
+	cfg := client.Config{
+		Endpoints: []string{"http://127.0.0.1:2379"},
+	}
+	cli, _ := client.New(cfg)
+	api := client.NewKeysAPI(cli)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		cpuInfo := GetCpuInfo(api, "/h2/cpu")
 		host := NewHost(cpuInfo, 10)
 		host.GetContainerCores(1.1, -1)
 	}

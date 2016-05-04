@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/projecteru/eru-alloc/utils"
@@ -31,7 +32,7 @@ func NewHost(cpuInfo map[string]int, share int) *Host {
 
 func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) {
 	var fullResultNum, fragmentResultNum, fragmentPiecesTotal, canDeployNum, baseLine int
-	var count, num, flag, b int
+	var fragmentBaseResult, count, num, flag, b int
 
 	if maxShareCore == -1 {
 		maxShareCore = len(self.full) - len(self.fragment) - full // 减枝，M == N 的情况下预留至少一个 full 量的核数
@@ -42,8 +43,8 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 	for _, pieces := range self.fragment {
 		fragmentPiecesTotal += pieces
 	}
-	fragmentResultNum = fragmentPiecesTotal / fragment
-	baseLine = utils.Min(fullResultNum, fragmentResultNum)
+	fragmentBaseResult = fragmentPiecesTotal / fragment
+	baseLine = utils.Min(fullResultNum, fragmentBaseResult)
 	count = len(self.fragment)
 
 	num = 0
@@ -54,7 +55,7 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		}
 
 		fullResultNum = (len(self.full) - i) / full
-		fragmentResultNum = 0
+		fragmentResultNum = fragmentBaseResult
 		for j := 0; j < i; j++ {
 			fragmentResultNum += self.share / fragment
 		}
@@ -70,6 +71,8 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 		flag = b
 	}
 
+	num += count
+	fmt.Println(self.full, self.fragment)
 	for no, pieces := range self.full {
 		if count == num {
 			break

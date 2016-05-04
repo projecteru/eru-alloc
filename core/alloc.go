@@ -77,9 +77,14 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 
 func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]int {
 	num = num * float64(self.share)
-	full := int(num) / self.share
-	fragment := int(num) % self.share
-	result := []map[string]int{}
+
+	var full, fragment int
+	var result = []map[string]int{}
+	var fullResult = map[string]int{}
+	var fragmentResult = []string{}
+
+	full = int(num) / self.share
+	fragment = int(num) % self.share
 
 	if full == 0 {
 		if maxShareCore == -1 {
@@ -92,7 +97,7 @@ func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]
 			self.fragment[no] = pieces
 			delete(self.full, no)
 		}
-		fragmentResult := self.getFragmentResult(fragment)
+		fragmentResult = self.getFragmentResult(fragment)
 		for _, no := range fragmentResult {
 			result = append(result, map[string]int{no: fragment})
 		}
@@ -102,7 +107,7 @@ func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]
 	if fragment == 0 {
 		n := len(self.full) / full
 		for i := 0; i < n; i++ {
-			fullResult := self.getFullResult(full)
+			fullResult = self.getFullResult(full)
 			result = append(result, fullResult)
 		}
 		return result
@@ -110,9 +115,9 @@ func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]
 
 	// 算出最优的碎片核和整数核组合
 	self.calcuatePiecesCores(full, fragment, maxShareCore)
-	fragmentResult := self.getFragmentResult(fragment)
+	fragmentResult = self.getFragmentResult(fragment)
 	for _, no := range fragmentResult {
-		fullResult := self.getFullResult(full)
+		fullResult = self.getFullResult(full)
 		if len(fullResult) != full { // 可能整数核不够用了结果并不一定可靠必须再判断一次
 			return result // 减枝这时候整数核一定不够用了，直接退出，这样碎片核和整数核的计算就完成了
 		}
@@ -123,7 +128,7 @@ func (self *Host) GetContainerCores(num float64, maxShareCore int) []map[string]
 }
 
 func (self *Host) getFragmentResult(fragment int) []string {
-	result := []string{}
+	var result = []string{}
 	for no, pieces := range self.fragment {
 		for i := 0; i < pieces/fragment; i++ {
 			result = append(result, no)
@@ -133,7 +138,7 @@ func (self *Host) getFragmentResult(fragment int) []string {
 }
 
 func (self *Host) getFullResult(full int) map[string]int {
-	result := map[string]int{}
+	var result = map[string]int{}
 	for no, pieces := range self.full {
 		result[no] = pieces   // 分配一整个核
 		delete(self.full, no) // 干掉这个可用资源

@@ -34,6 +34,8 @@ func main() {
 	go do(2, l, api, 2.5, 2)
 	go do(3, l, api, 0.2, 1)
 	go do(4, l, api, 3, -1)
+	go do(5, l, api, 1.1, -1)
+	go do(6, l, api, 1.2, -1)
 	for {
 		time.Sleep(1 * time.Second)
 	}

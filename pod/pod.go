@@ -1,4 +1,4 @@
-package Pod
+package pod
 
 import (
 	"github.com/projecteru/eru-alloc/core"
@@ -47,24 +47,36 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 	var host *core.Host
 	var plan []map[string]int
 	var nodeNum int = need / per
+	var last int = need % per
 	var n int
+
+	if last != 0 {
+		nodeNum += 1
+	}
 
 	if nodeNum > len(self.nodes) {
 		return nil
 	}
 
 	for node, cpuInfo := range self.nodes {
-		host = core.NewHost(cpuInfo, self.coreShare)
-		plan = host.GetContainerCores(cpu, self.maxShareCore)
-		n = len(plan)
-		if n < per {
-			continue
-		}
-		result[node] = plan[:per]
-		nodeNum -= 1
 		if nodeNum == 0 {
 			return result
 		}
+		host = core.NewHost(cpuInfo, self.coreShare)
+		plan = host.GetContainerCores(cpu, self.maxShareCore)
+		n = len(plan)
+		if nodeNum != 1 {
+			if n < per {
+				continue
+			}
+			result[node] = plan[:per]
+		} else {
+			if n < last {
+				continue
+			}
+			result[node] = plan[:last]
+		}
+		nodeNum -= 1
 	}
 	return nil
 }

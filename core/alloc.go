@@ -31,7 +31,7 @@ func NewHost(cpuInfo map[string]int, share int) *Host {
 
 func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) {
 	var fullResultNum, fragmentResultNum, canDeployNum, baseLine int
-	var fragmentBaseResult, count, num, flag, b int
+	var fragmentBaseResult, count, num, flag, b, baseContainers int
 
 	count = len(self.fragment)
 	if maxShareCore == -1 {
@@ -49,20 +49,22 @@ func (self *Host) calcuatePiecesCores(full int, fragment int, maxShareCore int) 
 
 	num = 0
 	flag = math.MaxInt64
+	baseContainers = self.share / fragment
 	for i := 1; i < maxShareCore+1; i++ {
 		fullResultNum = (len(self.full) - i) / full
-		fragmentResultNum = fragmentBaseResult + i*(self.share/fragment)
-
+		fragmentResultNum = fragmentBaseResult + i*baseContainers
+		// 剪枝，2者结果相近的时候最优
+		b = utils.Abs(fullResultNum - fragmentResultNum)
+		if b > flag {
+			break
+		}
+		flag = b
+		// 计算可以部署的量
 		canDeployNum = utils.Min(fullResultNum, fragmentResultNum)
 		if canDeployNum > baseLine {
 			num = i
 			baseLine = canDeployNum
 		}
-		b = utils.Abs(fullResultNum - fragmentResultNum) // 剪枝，2者结果相近的时候最优
-		if b > flag {
-			break
-		}
-		flag = b
 	}
 
 	num += count

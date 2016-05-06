@@ -65,16 +65,12 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 		host = core.NewHost(cpuInfo, self.coreShare)
 		plan = host.GetContainerCores(cpu, self.maxShareCore)
 		n = len(plan)
-		if nodeNum != 1 {
-			if n < per {
-				continue
-			}
+		if last != 0 && n < per && n >= last {
+			result[node] = plan[:last]
+		} else if n >= per {
 			result[node] = plan[:per]
 		} else {
-			if n < last {
-				continue
-			}
-			result[node] = plan[:last]
+			continue
 		}
 		nodeNum -= 1
 	}

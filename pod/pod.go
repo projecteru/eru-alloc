@@ -1,8 +1,6 @@
 package pod
 
-import (
-	"github.com/projecteru/eru-alloc/core"
-)
+import "github.com/projecteru/eru-alloc/core"
 
 type Pod struct {
 	nodes        map[string]map[string]int
@@ -49,10 +47,7 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 	var nodeNum int = need / per
 	var last int = need % per
 	var n int
-
-	if last != 0 {
-		nodeNum += 1
-	}
+	var less = map[string]interface{}{}
 
 	if nodeNum > len(self.nodes) {
 		return nil
@@ -60,19 +55,32 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 
 	for node, cpuInfo := range self.nodes {
 		if nodeNum == 0 {
-			return result
+			break
 		}
 		host = core.NewHost(cpuInfo, self.coreShare)
 		plan = host.GetContainerCores(cpu, self.maxShareCore)
 		n = len(plan)
-		if last != 0 && n < per && n >= last {
-			result[node] = plan[:last]
-		} else if n >= per {
+		if n >= per {
 			result[node] = plan[:per]
-		} else {
-			continue
+			less[node] = new(interface{})
+			nodeNum -= 1
 		}
-		nodeNum -= 1
+	}
+	if last == 0 && nodeNum == 0 {
+		return result
+	} else if last != 0 && nodeNum == 0 {
+		for node, cpuInfo := range self.nodes {
+			if _, ok := less[node]; !ok {
+				host = core.NewHost(cpuInfo, self.coreShare)
+				plan = host.GetContainerCores(cpu, self.maxShareCore)
+				n = len(plan)
+				if n >= last {
+					result[node] = plan[:last]
+					break
+				}
+			}
+		}
+		return result
 	}
 	return nil
 }

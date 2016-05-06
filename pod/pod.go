@@ -48,7 +48,6 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 	var last int = need % per
 	var n int
 	var less = map[string]interface{}{}
-	var lastInsert = false
 
 	if nodeNum > len(self.nodes) {
 		return nil
@@ -77,13 +76,9 @@ func (self *Pod) AveragePlan(cpu float64, need int, per int) map[string][]map[st
 				n = len(plan)
 				if n >= last {
 					result[node] = plan[:last]
-					lastInsert = true
-					break
+					return result
 				}
 			}
-		}
-		if lastInsert {
-			return result
 		}
 	}
 
